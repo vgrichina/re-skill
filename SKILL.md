@@ -65,6 +65,17 @@ After 10 tool calls with no progress on a single task:
 
 If the same task is attempted across 3+ sessions without progress, escalate: the task decomposition is wrong, rethink the approach entirely.
 
+## Common gotchas (from past projects)
+
+- **MZ relocations break byte-pattern searches**: raw `search_bytes.py` misses far calls/jumps because segment values are patched at load time. Use `xref.py` which understands relocation tables.
+- **Decompress before disassembly**: compressed binaries are opaque. Always identify and unpack first (Ph2). All subsequent work uses the unpacked image.
+- **Two-level pointer tables**: flat decode shows pointer values, not the data they point to. Use `decode_tables.py --follow` to chase pointers to sub-tables.
+- **Tile index ≠ VRAM address**: many platforms use attribute/remapping tables between tile indices and actual video memory. Validate tile rendering against emulator, don't assume direct mapping.
+- **Don't search for composed text**: menu text, scores, and dialog are often built at runtime from format strings + data tables. Trace from code control flow, not string patterns.
+- **Bank-aware xref**: on banked ROMs (NES/GB), cross-bank byte matches are false positives. Always pass the bank filter to `xref.py`.
+- **WRAM tilemap stride varies**: Game Boy WRAM buffers may use 20-col stride, not the standard 32-col VRAM stride. Verify actual layout.
+- **Struct stride off-by-one**: a wrong stride corrupts every subsequent struct in the table. Cross-check decoded fields against emulator memory dump.
+
 ## Tool rules
 
 - Read not cat · Grep not grep · Glob not ls/find
