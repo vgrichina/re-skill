@@ -76,24 +76,41 @@ If the same task is attempted across 3+ sessions without progress, escalate: the
 
 All tools auto-load labels.csv for annotation. Prefix is `python3 tools/`.
 
+Core tools (signatures adapt per platform):
 ```
-dis.py <addr> [lines]           # disassemble from addr (hex), default ~20 lines
-xref.py <addr>                  # find all references to addr (calls, jumps, loads, stores)
-search_bytes.py <hex> [--context N] [--disasm]  # byte pattern search, optional disasm context
-decode_tables.py <addr> <count> <fmt> [--follow]  # decode struct/table; --follow for pointer tables
-extract_tiles.py                # decode tiles/sprites to gfx/ PNGs
-render_screen.py                # composite screen from tilemap+tiles to gfx/screen_NNN.png
+dis.py <addr> [lines]                      # flat binary: file offset (hex)
+dis.py <bank> <addr> [nbytes]              # banked ROM: bank + addr
+dis.py <file> <addr> [nbytes] --hunk N     # Amiga hunk: target specific hunk
+xref.py <addr>                             # find all refs (calls, jumps, loads, stores)
+xref.py <addr> [bank]                      # banked: optional bank filter
+xref.py <addr> --code                      # scan known code segments only (faster)
+xref.py <addr> -r START END                # restrict scan to file range
+xref.py <addr> -c N                        # show N bytes of context
+search_bytes.py <hex> [--context N] [--disasm [N]]  # hex can be spaced or not
+decode_tables.py <addr> <count> <fmt>      # fmt: u8/s8/u16/s16/u32/ptr16/farptr/q8/b8/nullstr
+decode_tables.py <addr> <count> struct:<n>:<f,f,...>  # struct with field layout
+decode_tables.py <addr> <count> <fmt> --follow N FMT  # two-level pointer tables
+extract_tiles.py                           # decode tiles/sprites to gfx/ PNGs
+render_screen.py                           # composite screen to gfx/screen_NNN.png
 ```
 
 Platform extras (built as needed):
 ```
 decompress.py                   # reverse-engineered decompressor (Ph2)
-ds_lookup.py                    # DOS DS-relative address resolver
-strings_dump.py                 # extract embedded strings
-struct_dump.py                  # dump struct at address with field layout
+seg_offset.py                   # convert between SEG:OFF and file/DS offsets (DOS)
+ds_lookup.py <exe> <addr> [-n N] [-s|-w|-d|-f32|-f64]  # DS-relative memory viewer
+strings_dump.py [-g "pattern"] [-r START END]           # string scanner with grep/range
+struct_dump.py                  # pre-configured struct dumper
+find_callers.py <addr>          # find all callers (near+far), complements xref.py
+palette_dump.py [--accent] [--scan]                     # palette extractor
+a4resolve.py <file> [--dump | -- <offset>]              # Amiga A4-relative library resolver
+hunk_scan.py / hunk_loader.py   # Amiga hunk executable parser
+adf_extract.py / adf_debug.py   # Amiga ADF disk image tools
 check_bank_refs.py              # verify far references point to valid banks (NES/GB)
 extract_rom_banks.py            # split MBC1/3 ROM banks (GB)
+render_sprites.py               # render sprite sheets with palette/scale options
 render_level.py                 # full level/map renderer (Ph6)
+render_compare.py IMG1 IMG2 [--diff]  # side-by-side pixel comparison
 compare_frames.py               # pixel-diff emulator vs web port (Ph6)
 ```
 
@@ -135,9 +152,19 @@ docs/
   architecture_web.md # JS modules, EXE-to-web mapping
 ```
 
+## Platform conventions
+
+Address notation and labels.csv format vary by platform. Set in CLAUDE.md during bootstrap.
+
+- **DOS flat/MZ**: file offsets `0xXXXXX`, DS-relative `DS:0xXXXX`, segment:offset `SEG:OFF`. Tools: seg_offset.py, ds_lookup.py. FPU emulation (INT 34h-3Dh) if Borland.
+- **NES/GB banked ROM**: `bank,addr` (addr hex no prefix). WRAM/HRAM labels use `bank='*'`. Tools: check_bank_refs.py, extract_rom_banks.py.
+- **Amiga hunk**: hunk-relative offsets, A4-relative library calls. Tools: hunk_scan.py, a4resolve.py, adf_extract.py.
+
 ## re_loop.sh (scaffolded for user, not agent-invoked)
 
 Scaffolded into the project from [re_loop_template.sh](re_loop_template.sh) during bootstrap. The user runs it from the terminal to drive autonomous sessions — the agent never invokes it directly.
+
+The ALLOWED_TOOLS in re_loop.sh should include wildcard patterns for on-the-fly scripts: `Bash(python3 tools/analyze_*)`, `Bash(python3 tools/audit_*)`, `Bash(python3 tools/check_*)`, `Bash(python3 tools/gen_*)`, `Bash(python3 tools/dump_*)`.
 
 ## Verification checkpoints
 

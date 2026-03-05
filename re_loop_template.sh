@@ -19,9 +19,12 @@ Bash(python3 tools/decode_tables.py*),\
 Bash(python3 tools/extract_tiles.py*),\
 Bash(python3 tools/render_screen.py*),\
 Bash(python3 tools/analyze_*),\
+Bash(python3 tools/audit_*),\
 Bash(python3 tools/check_*),\
 Bash(python3 tools/dump_*),\
 Bash(python3 tools/decode_*),\
+Bash(python3 tools/gen_*),\
+Bash(python3 tools/render_*),\
 Bash(python3 tools/emu*),\
 Bash(python3 -m tools.emu*),\
 Bash(git add*),Bash(git commit*),\
