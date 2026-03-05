@@ -9,7 +9,7 @@ BINARY="rom/<game.ext>"
 TOOLS_PREFIX="python3 tools/"
 LABELS="labels.csv"
 DEAD_ENDS="dead_ends.md"
-MAX_TURNS=100
+MAX_TURNS=150
 GIT_ADD="REVERSE.md labels.csv dead_ends.md web/ docs/ tools/"
 ALLOWED_TOOLS="\
 Bash(python3 tools/dis.py*),\
@@ -22,6 +22,9 @@ Bash(python3 tools/analyze_*),\
 Bash(python3 tools/check_*),\
 Bash(python3 tools/dump_*),\
 Bash(python3 tools/decode_*),\
+Bash(python3 tools/emu*),\
+Bash(python3 -m tools.emu*),\
+Bash(git add*),Bash(git commit*),\
 Bash(git log*),Bash(git status*),Bash(git diff*),\
 Bash(python3 -m http.server*),\
 Read,Edit,Write,Glob,Grep"
@@ -81,7 +84,7 @@ Do not batch all investigation before writing — write after every few tool cal
 No need to re-investigate the binary.
 
 **Documentation** (docs/ directory):
-1. Produce docs/architecture_exe.md (binary layout, call graph, data flow).
+1. Produce docs/architecture_exe.md (binary layout, call graph, module map, data flow).
 2. Produce docs/architecture_web.md (module graph, EXE-to-web mapping, state machine).
 Both files should exist before the project is complete.
 
@@ -104,7 +107,7 @@ labels.csv format: addr,name,comment  (name and comment both optional)
 
 IMPORTANT tool rules:
 - Use Read (not cat/head/tail), Grep (not grep/rg), Glob (not ls/find)
-- Write a .py file first — never run inline python3 -
+- Write a .py file first — never run inline python3 -c
 - No third-party disassemblers
 
 Do not re-document already-covered addresses. Stop after $TASKS tasks."
@@ -151,6 +154,7 @@ Do not re-document already-covered addresses. Stop after $TASKS tasks."
 
   git commit -m "RE session $i: $SUMMARY"
   echo "Committed: $SUMMARY"
+  sleep 1
 done
 
 echo ""

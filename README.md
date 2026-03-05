@@ -43,19 +43,20 @@ After install, `/re` will appear as an available skill in Claude Code.
 
 ```
 your-project/
-  REVERSE.md            # Data-range map, findings, task list
+  REVERSE.md            # Data-range map, findings, task list, verification checklist
   labels.csv            # addr,name,comment — grows as you annotate
   dead_ends.md          # Stuck log — avoids repeating failed approaches
   re_loop.sh            # Autonomous session driver
   re_loop_sessions/     # Session logs
   tools/
     instruction_set.py  # CPU opcode database (you build per platform)
-    dis.py              # Targeted disassembler
+    dis.py              # Targeted disassembler (auto-loads labels.csv)
     search_bytes.py     # Byte pattern search
     xref.py             # Cross-reference finder
     decode_tables.py    # Struct/table decoder
     extract_tiles.py    # Graphics decoder
     render_screen.py    # Screen compositor
+    emu/                # Scriptable emulator (Ph5.5, optional)
   gfx/                  # Extracted graphics
   web/
     index.html          # Game reimplementation
@@ -65,13 +66,14 @@ your-project/
     architecture_web.md # JS modules, EXE-to-web mapping
 ```
 
-## The 7 phases
+## The phases
 
 1. **Identify** — file header, platform, CPU, memory map
 2. **Decompress** — unpack if compressed (skip if flat ROM)
 3. **Disassemble** — build instruction_set.py + dis.py, start annotating
 4. **Extract assets** — tiles, palettes, tilemaps to PNG; build catalog.html
 5. **Map data structures** — tables, structs, pointer arrays
+5.5. **Scriptable emulator** — (optional) minimal CPU emulator for automated data extraction and cross-validation when static RE isn't enough
 6. **Validate** — cross-check everything against a running emulator
 7. **Web port** — faithful reimplementation as plain HTML canvas
 
@@ -90,8 +92,10 @@ Each session: read REVERSE.md, pick top task, investigate with tools, update doc
 ## Design principles
 
 - **No third-party disassemblers** — all tooling built from scratch for full understanding
-- **Write findings immediately** — every few tool calls, update REVERSE.md and labels.csv
+- **Write findings immediately** — every 2-3 tool calls, update REVERSE.md and labels.csv
 - **Dead-end tracking** — after 10 fruitless tool calls, log it and split the task
+- **Knowledge base accumulation** — labels.csv is loaded by all tools automatically; findings compound across sessions
+- **Verification checkpoints** — each phase has a cross-check gate before proceeding
 - **Visual validation** — catalog.html lets you compare extracted assets against the emulator
 - **Plain HTML/JS** — web port uses no build tools, served with `python3 -m http.server`
 
@@ -100,9 +104,9 @@ Each session: read REVERSE.md, pick top task, investigate with tools, update doc
 | File | Purpose |
 |------|---------|
 | `SKILL.md` | Entry point — frontmatter, dispatch logic, session rules |
-| `phases.md` | 7-phase bootstrap checklist |
-| `reverse_template.md` | REVERSE.md scaffold |
-| `dead_ends_template.md` | Dead-ends log template |
+| `phases.md` | Phase checklist with verification checkpoints |
+| `reverse_template.md` | REVERSE.md scaffold with memory map, data structures, state machine sections |
+| `dead_ends_template.md` | Dead-ends log template with lifecycle rules |
 | `re_loop_template.sh` | Autonomous loop script template |
 
 ## License
