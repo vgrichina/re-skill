@@ -9,9 +9,9 @@ argument-hint: "[binary-path]  or empty to continue"
 ---
 
 ## Live context
-- Open tasks:  !`grep -m 10 '\[ \]' REVERSE.md 2>/dev/null`
-- Dead ends:   !`head -50 dead_ends.md 2>/dev/null`
-- Sessions:    !`ls re_loop_sessions/ 2>/dev/null | tail -5`
+- Open tasks:  !`grep -m 10 '\[ \]' REVERSE.md 2>/dev/null || true`
+- Dead ends:   !`head -50 dead_ends.md 2>/dev/null || true`
+- Sessions:    !`ls re_loop_sessions/ 2>/dev/null | tail -5 || true`
 
 ## Dispatch
 
@@ -71,6 +71,73 @@ If the same task is attempted across 3+ sessions without progress, escalate: the
 - Write a .py file first, then run it — never inline `python3 -c`
 - No third-party disassemblers (no radare2, Ghidra, ndisasm, mgbdis)
 - All tool scripts live in tools/ — invoke as `python3 tools/dis.py ...`
+
+## Tool CLI reference
+
+All tools auto-load labels.csv for annotation. Prefix is `python3 tools/`.
+
+```
+dis.py <addr> [lines]           # disassemble from addr (hex), default ~20 lines
+xref.py <addr>                  # find all references to addr (calls, jumps, loads, stores)
+search_bytes.py <hex> [--context N] [--disasm]  # byte pattern search, optional disasm context
+decode_tables.py <addr> <count> <fmt> [--follow]  # decode struct/table; --follow for pointer tables
+extract_tiles.py                # decode tiles/sprites to gfx/ PNGs
+render_screen.py                # composite screen from tilemap+tiles to gfx/screen_NNN.png
+```
+
+Platform extras (built as needed):
+```
+decompress.py                   # reverse-engineered decompressor (Ph2)
+ds_lookup.py                    # DOS DS-relative address resolver
+strings_dump.py                 # extract embedded strings
+struct_dump.py                  # dump struct at address with field layout
+check_bank_refs.py              # verify far references point to valid banks (NES/GB)
+extract_rom_banks.py            # split MBC1/3 ROM banks (GB)
+render_level.py                 # full level/map renderer (Ph6)
+compare_frames.py               # pixel-diff emulator vs web port (Ph6)
+```
+
+Scriptable emulator (Ph5.5, `python3 -m tools.emu` or `python3 tools/emu`):
+```
+--dump-regs                     # load binary, print initial state
+--boot-test                     # run until first OS call or N instructions
+--run-func LABEL                # jump to labeled function with pre-set state
+--break ADDR                    # breakpoint, dump registers + stack
+--trace                         # print each instruction
+--keys STEP:SCANCODE:ASCII      # inject key input at step N
+--dump-screen FILE.png          # screen capture
+--compare                       # export CSV for diffing against web port
+```
+
+## Scaffolded project structure
+
+```
+REVERSE.md            # data-range map, findings, task list, verification checklist
+labels.csv            # addr,name,comment — grows across sessions
+dead_ends.md          # stuck log — avoids repeating failed approaches
+re_loop.sh            # autonomous session driver
+re_loop_sessions/     # session logs
+tools/
+  instruction_set.py  # CPU opcode database (built per platform)
+  dis.py              # targeted disassembler (auto-loads labels.csv)
+  search_bytes.py     # byte pattern search
+  xref.py             # cross-reference finder
+  decode_tables.py    # struct/table decoder
+  extract_tiles.py    # graphics decoder
+  render_screen.py    # screen compositor
+  emu/                # scriptable emulator (Ph5.5, optional)
+gfx/                  # extracted graphics
+web/
+  index.html          # game reimplementation
+  catalog.html        # asset browser for visual validation
+docs/
+  architecture_exe.md # binary layout, call graph, data flow
+  architecture_web.md # JS modules, EXE-to-web mapping
+```
+
+## re_loop.sh (scaffolded for user, not agent-invoked)
+
+Scaffolded into the project from [re_loop_template.sh](re_loop_template.sh) during bootstrap. The user runs it from the terminal to drive autonomous sessions — the agent never invokes it directly.
 
 ## Verification checkpoints
 
