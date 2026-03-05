@@ -3,7 +3,7 @@ name: re
 description: >
   Reverse engineering session: disassemble, annotate, extract assets, port to web.
   Use when working on a binary RE project with REVERSE.md and tools/ directory.
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash(python3 tools/*), Bash(git log*), Bash(git status*), Bash(git diff*), Bash(grep*), Bash(head*), Bash(ls*)
 argument-hint: "[binary-path]  or empty to continue"
 ---
