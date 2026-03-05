@@ -154,7 +154,6 @@ Do not re-document already-covered addresses. Stop after $TASKS tasks."
 
   git commit -m "RE session $i: $SUMMARY"
   echo "Committed: $SUMMARY"
-  sleep 1
 done
 
 echo ""
